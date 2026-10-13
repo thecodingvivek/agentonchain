@@ -1,0 +1,27 @@
+{
+  "name": "agentonchain-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "eve dev --host 127.0.0.1 --port 2000",
+    "build": "eve build",
+    "start": "eve start --host 127.0.0.1 --port 2000",
+    "ask": "eve invoke --url http://127.0.0.1:2000",
+    "info": "eve info",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ai": "7.0.127",
+    "eve": "0.56.0",
+    "zod": "4.5.4",
+    "@ai-sdk/groq": "4.0.54"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5"
+  }
+}
