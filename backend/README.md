@@ -51,3 +51,32 @@ npm start
 ```
 
 Runtime package versions are pinned to the locally available eve release. During initial setup, npm downloads were unavailable, so ignored links under `node_modules` reuse existing packages for validation, with a separate local cache. A fresh checkout needs `npm install`; those links are not part of the project. No credentials from that installation are reused. A live model answer needs a configured key and working network access.
+
+## Second agent: Everyday helper
+
+`everyday-helper/` is a separate general-purpose eve agent with its own instructions, session history, and local server. It uses the same Groq configuration as Agentonchain assistant. Its launcher reads `backend/.env.local`, so both agents share the configured `GROQ_API_KEY` and optional `GROQ_MODEL` without copying the key into another file.
+
+Run both agents in separate terminals from `backend/`:
+
+```sh
+# Agentonchain assistant
+npm run dev
+
+# Everyday helper (second terminal)
+npm run dev:helper
+```
+
+| Agent | Local server | Query endpoint |
+| --- | --- | --- |
+| Agentonchain assistant | http://127.0.0.1:2000 | http://127.0.0.1:2000/eve/v1/session |
+| Everyday helper | http://127.0.0.1:2001 | http://127.0.0.1:2001/eve/v1/session |
+
+Ask the helper while its server is running:
+
+```sh
+npm run ask:helper -- "Explain what an API is."
+```
+
+Inspect or build it with `npm run info:helper` and `npm run build:helper`. Serve its built output with `npm run start:helper`.
+
+Both agents appear in the frontend's Explore section with these session endpoints. Their cards are local registrations, not uptime checks: a card does not mean its server is running. The frontend does not invoke either agent yet. Prices and ratings are unconfigured for these local agents. `POST /eve/v1/session` starts a session; answers arrive through eve's session stream.

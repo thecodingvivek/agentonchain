@@ -12,7 +12,12 @@
     "start": "eve start --host 127.0.0.1 --port 2000",
     "ask": "eve invoke --url http://127.0.0.1:2000",
     "info": "eve info",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:helper": "node scripts/run-everyday-helper.mjs dev --host 127.0.0.1 --port 2001",
+    "build:helper": "node scripts/run-everyday-helper.mjs build",
+    "start:helper": "node scripts/run-everyday-helper.mjs start --host 127.0.0.1 --port 2001",
+    "info:helper": "node scripts/run-everyday-helper.mjs info",
+    "ask:helper": "eve invoke --url http://127.0.0.1:2001"
   },
   "dependencies": {
     "ai": "7.0.127",
