@@ -6,6 +6,8 @@ import type { MockAgent } from "@/lib/mock-agents";
 import type { ChatEvent } from "@/lib/chat-stream";
 import { readNdjson } from "@/lib/ndjson";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function Icon({ name }: { name: "chat" | "deploy" | "cards" | "send" | "logout" }) {
   return (
@@ -118,7 +120,18 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
                 </div>
               ) : (
                 <div className="message-list" role="log" aria-label="Chat messages" aria-live="polite" aria-relevant="additions">
-                  {messages.map((message) => <article key={message.id} className={message.role === "user" ? "user-message" : "assistant-message"}><span className="message-author">{message.role === "user" ? "You" : "Chat agent"}</span><p>{message.text || "Thinking…"}</p></article>)}
+                  {messages.map((message) => (
+                    <article key={message.id} className={message.role === "user" ? "user-message" : "assistant-message"}>
+                      <span className="message-author">{message.role === "user" ? "You" : "Chat agent"}</span>
+                      {message.role === "user" ? <p>{message.text}</p> : (
+                        <div className="assistant-content">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml components={{
+                            table: ({ children }) => <div className="markdown-table" role="region" aria-label="Agent response table" tabIndex={0}><table>{children}</table></div>,
+                          }}>{message.text || "Thinking…"}</ReactMarkdown>
+                        </div>
+                      )}
+                    </article>
+                  ))}
                 </div>
               )}
             </div>

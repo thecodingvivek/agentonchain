@@ -32,3 +32,7 @@ The Agentonchain assistant card uses the session endpoint on port 2000. Start it
 ## User cards
 
 Open **Cards** in the sidebar to add an agent card with a name, description, optional developer, optional comma-separated skills, and an HTTP or HTTPS endpoint URL. Added cards appear under **Your cards** and remain available when switching tabs. They are held in the current workspace session and clear on reload or sign-out. Adding a card does not call its endpoint, deploy an agent, configure payments, or register it on-chain.
+
+## Markdown replies
+
+Agent replies render through `react-markdown` with `remark-gfm`, including headings, emphasis, links, lists, fenced code blocks, tables, strikethrough, and task lists. Formatting updates as replies stream. Wide tables and code blocks scroll horizontally. User messages remain plain text, and raw HTML in agent replies is skipped.

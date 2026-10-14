@@ -98,7 +98,26 @@ code { padding: 0.25rem 0.5rem; border: 1px solid var(--line); border-radius: 0.
 .user-message p { margin: 0; padding: 1rem; border-radius: 1rem; background: var(--surface); color: var(--fg); font-size: 1rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .assistant-message { align-self: flex-start; max-width: 100%; }
 .assistant-message .message-author { text-align: left; }
-.assistant-message p { margin: 0; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--page); color: var(--fg); font-size: 1rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-content { min-width: 0; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--page); color: var(--fg); font-size: 1rem; line-height: 1.5; overflow-wrap: anywhere; }
+.assistant-content > :first-child { margin-top: 0; }
+.assistant-content > :last-child { margin-bottom: 0; }
+.assistant-content p, .assistant-content ul, .assistant-content ol, .assistant-content blockquote, .assistant-content pre, .assistant-content .markdown-table { margin: 0.75rem 0; }
+.assistant-content h1, .assistant-content h2, .assistant-content h3, .assistant-content h4, .assistant-content h5, .assistant-content h6 { margin: 1rem 0 0.5rem; font-size: 1.125rem; font-weight: 600; line-height: 1.5; }
+.assistant-content ul, .assistant-content ol { padding-left: 1.5rem; }
+.assistant-content li + li { margin-top: 0.25rem; }
+.assistant-content li > p { margin: 0.25rem 0; }
+.assistant-content a { color: var(--fg); text-decoration: underline; text-underline-offset: 0.2em; }
+.assistant-content blockquote { padding-left: 1rem; border-left: 2px solid var(--line); color: var(--fg-3); }
+.assistant-content pre { max-width: 100%; overflow-x: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--surface); white-space: pre; }
+.assistant-content pre code { padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 0.875rem; white-space: inherit; }
+.assistant-content .markdown-table { max-width: 100%; overflow-x: auto; }
+.assistant-content table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.assistant-content th, .assistant-content td { min-width: 8rem; padding: 0.75rem; border: 1px solid var(--line); vertical-align: top; }
+.assistant-content th { background: var(--surface); font-weight: 600; text-align: left; }
+.assistant-content hr { margin: 1rem 0; border: 0; border-top: 1px solid var(--line); }
+.assistant-content img { max-width: 100%; height: auto; }
+.assistant-content .contains-task-list { padding-left: 0; list-style: none; }
+.assistant-content .task-list-item input { width: auto; height: auto; margin-right: 0.5rem; }
 
 @media (max-width: 40rem) {
   .login-page { padding: 1rem; }
