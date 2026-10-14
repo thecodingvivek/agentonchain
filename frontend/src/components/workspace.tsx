@@ -2,7 +2,7 @@
 
 import { Deploy } from "@/components/deploy";
 import { Cards } from "@/components/cards";
-import type { MockAgent } from "@/lib/mock-agents";
+import type { PaymentWallet } from "@/lib/payment-wallet";
 import type { ChatEvent } from "@/lib/chat-stream";
 import { readNdjson } from "@/lib/ndjson";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -23,7 +23,7 @@ function Icon({ name }: { name: "chat" | "deploy" | "cards" | "send" | "logout" 
 
 export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   const [section, setSection] = useState<"chat" | "deploy" | "cards">("chat");
-  const [cards, setCards] = useState<MockAgent[]>([]);
+  const [paymentWallet, setPaymentWallet] = useState<PaymentWallet | null>(null);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<{ id: string; role: "user" | "assistant"; text: string }[]>([]);
   const [sending, setSending] = useState(false);
@@ -152,7 +152,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
         ) : section === "deploy" ? (
           <Deploy />
         ) : (
-          <Cards cards={cards} onAdd={(card) => setCards((current) => [...current, card])} />
+          <Cards wallet={paymentWallet} onSave={setPaymentWallet} />
         )}
       </section>
     </main>

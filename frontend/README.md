@@ -11,7 +11,7 @@ bun run dev
 
 Open http://localhost:3000. Sign in with username `demo` and password `demo123`.
 
-The form supports required fields, invalid-credential feedback, password visibility, a workspace after successful login, and sign-out. Chat has a growing message input, Enter to send, Shift+Enter for a new line, and a local message history. Messages and drafts survive switching between Chat and Deploy. Deploy shows only the primary local backend agent, Agentonchain assistant, with its name, description, developer, skills, endpoint URL, unconfigured pricing, and review status. Each agent is shown in a card with skill badges, input/output price panels, a rating, and an expandable details area for its endpoint, identity, and payment mode. Deploy imports its CSS module directly so its styles load with the component. Next.js handles CSS natively; the previous custom loader forced `.module.css` files to plain CSS and prevented module styles from matching. The UI uses plain CSS, so it does not need Tailwind directives or a custom CSS loader. Explore supports local search by name, description, developer, and skills. Fixtures are in `src/lib/mock-agents.ts`. AI responses, live deployment, endpoint calls, and payments are not connected. Signing out clears the workspace. Login state is held in memory and resets on reload. The public demo credentials are defined in `src/lib/mock-auth.ts`; they provide no real authentication or access control.
+The form supports required fields, invalid-credential feedback, password visibility, a workspace after successful login, and sign-out. Chat has a growing message input, Enter to send, Shift+Enter for a new line, and a local message history. Messages and drafts survive switching between Chat and Deploy. Deploy shows only the primary local backend agent, Agentonchain assistant, with its name, description, developer, skills, endpoint URL, unconfigured pricing, and review status. Each agent is shown in a card with skill badges, input/output price panels, a rating, and an expandable details area for its endpoint, identity, and payment mode. Deploy imports its CSS module directly so its styles load with the component. Next.js handles CSS natively; the previous custom loader forced `.module.css` files to plain CSS and prevented module styles from matching. The UI uses plain CSS, so it does not need Tailwind directives or a custom CSS loader. Explore supports local search by name, description, developer, and skills. Fixtures are in `src/lib/mock-agents.ts`. Chat streams AI responses from Chat agent through `/api/chat`. Live deployment and buyer payments are not connected. Signing out clears the workspace. Login state is held in memory and resets on reload. The public demo credentials are defined in `src/lib/mock-auth.ts`; they provide no real authentication or access control.
 
 ## Checks
 
@@ -29,9 +29,11 @@ The official components, `LimePortalProvider`, foundation token tables, and Lime
 
 The Agentonchain assistant card uses the session endpoint on port 2000. Start its backend server using the commands in `../backend/README.md`. Its prices are unconfigured and it has no reviews yet; listing it does not check whether it is running.
 
-## User cards
+## Payment card
 
-Open **Cards** in the sidebar to add an agent card with a name, description, optional developer, optional comma-separated skills, and an HTTP or HTTPS endpoint URL. Added cards appear under **Your cards** and remain available when switching tabs. They are held in the current workspace session and clear on reload or sign-out. Adding a card does not call its endpoint, deploy an agent, configure payments, or register it on-chain.
+Open **Cards** to configure one buyer payment-wallet card. Enter a nonzero Ethereum wallet address and a maximum USDC amount per agent call (default `0.01`). The network is fixed to Base Sepolia with test USDC. Saving replaces the single wallet configuration; **Edit payment card** updates that same card, and **Cancel editing** preserves the saved values. Agent-card creation has been removed from this section.
+
+The wallet details remain available while switching tabs and clear on reload or sign-out. This card stores public wallet metadata and a proposed spending limit. It does not yet connect a signer, pass wallet details to the backend, enforce the limit on payments, or enable Chat agent to buy agent calls. No private keys or seed phrases are collected.
 
 ## Markdown replies
 

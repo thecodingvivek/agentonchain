@@ -1,7 +1,7 @@
 /** Frontend registration for the primary backend agent. */
 export type MockAgent = {
   id: string;
-  source: "mock" | "local" | "custom";
+  source: "mock" | "local";
   name: string;
   description: string;
   developer: string;

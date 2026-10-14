@@ -5,13 +5,13 @@ import { exploreAgents, searchMockAgents, type MockAgent } from "@/lib/mock-agen
 import { formatAmount } from "@/lib/format-amount";
 import styles from "./deploy.module.css";
 
-export function AgentCard({ agent }: { agent: MockAgent }) {
+function AgentCard({ agent }: { agent: MockAgent }) {
   const initials = agent.name.split(" ").map((word) => word[0]).join("");
   return (
     <article className={styles.card} aria-labelledby={`agent-${agent.id}`}>
       <div className={styles.cardTop}>
         <span className={styles.agentAvatar} aria-hidden="true">{initials}</span>
-        <span className={styles.badge}>{agent.source === "custom" ? "Your card" : agent.source === "local" ? "Local agent" : `${agent.status === "deployed" ? "Deployed" : "Available"} · Mock`}</span>
+        <span className={styles.badge}>{agent.source === "local" ? "Local agent" : `${agent.status === "deployed" ? "Deployed" : "Available"} · Mock`}</span>
       </div>
       <h3 id={`agent-${agent.id}`} className={styles.agentName}>{agent.name}</h3>
       <p className={styles.developer}>By {agent.developer}</p>
