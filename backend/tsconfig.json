@@ -16,7 +16,8 @@
   "include": [
     "agent/**/*.ts",
     "everyday-helper/agent/**/*.ts",
-    "chat-agent/agent/**/*.ts"
+    "chat-agent/agent/**/*.ts",
+    "payments/*.ts"
   ],
   "exclude": [
     "node_modules",
