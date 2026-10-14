@@ -11,11 +11,26 @@ export function Cards({ wallet, onSave }: { wallet: PaymentWallet | null; onSave
   const [notice, setNotice] = useState("");
   const [signer, setSigner] = useState<{ configured: boolean; address: string | null } | null>(null);
   useEffect(() => {
-    const controller = new AbortController();
-    const checkSigner = () => fetch("/api/wallet", { signal: controller.signal }).then((response) => response.json()).then((value) => { if (!controller.signal.aborted) setSigner(value); }).catch(() => { if (!controller.signal.aborted) setSigner({ configured: false, address: null }); });
+    let active = true;
+    let checking = false;
+    const checkSigner = async () => {
+      if (!active || checking) return;
+      checking = true;
+      try {
+        const response = await fetch("/api/wallet");
+        if (!response.ok) throw new Error("Wallet status unavailable.");
+        const value = await response.json();
+        if (active) setSigner(value);
+      } catch {
+        if (active) setSigner({ configured: false, address: null });
+      } finally {
+        checking = false;
+      }
+    };
     void checkSigner();
     const interval = setInterval(checkSigner, 10_000);
-    return () => { clearInterval(interval); controller.abort(); };
+    // Ignore any in-flight response after unmount instead of aborting the fetch.
+    return () => { active = false; clearInterval(interval); };
   }, []);
   const ready = signer?.configured && wallet?.address.toLowerCase() === signer.address?.toLowerCase();
 
