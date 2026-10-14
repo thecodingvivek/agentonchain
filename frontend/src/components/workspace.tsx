@@ -1,13 +1,16 @@
 "use client";
 
 import { Deploy } from "@/components/deploy";
+import { Cards } from "@/components/cards";
+import type { MockAgent } from "@/lib/mock-agents";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
-function Icon({ name }: { name: "chat" | "deploy" | "send" | "logout" }) {
+function Icon({ name }: { name: "chat" | "deploy" | "cards" | "send" | "logout" }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {name === "chat" && <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2 2-5a8.5 8.5 0 1 1 18-5.5Z" />}
       {name === "deploy" && <><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5M3 16l9 5 9-5" /></>}
+      {name === "cards" && <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 10h4m-4 4h10" /></>}
       {name === "send" && <path d="M12 19V5m-6 6 6-6 6 6" />}
       {name === "logout" && <><path d="M9 4H4v16h5M9 12h12m-4-4 4 4-4 4" /></>}
     </svg>
@@ -15,7 +18,8 @@ function Icon({ name }: { name: "chat" | "deploy" | "send" | "logout" }) {
 }
 
 export function Workspace({ onSignOut }: { onSignOut: () => void }) {
-  const [section, setSection] = useState<"chat" | "deploy">("chat");
+  const [section, setSection] = useState<"chat" | "deploy" | "cards">("chat");
+  const [cards, setCards] = useState<MockAgent[]>([]);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
   const composer = useRef<HTMLTextAreaElement>(null);
@@ -48,6 +52,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
         <nav className="workspace-nav" aria-label="Main navigation">
           <button type="button" className={`nav-item ${section === "chat" ? "active" : ""}`} aria-current={section === "chat" ? "page" : undefined} onClick={() => setSection("chat")}><Icon name="chat" /><span>Chat</span></button>
           <button type="button" className={`nav-item ${section === "deploy" ? "active" : ""}`} aria-current={section === "deploy" ? "page" : undefined} onClick={() => setSection("deploy")}><Icon name="deploy" /><span>Deploy</span></button>
+          <button type="button" className={`nav-item ${section === "cards" ? "active" : ""}`} aria-current={section === "cards" ? "page" : undefined} onClick={() => setSection("cards")}><Icon name="cards" /><span>Cards</span></button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-profile"><span className="avatar" aria-hidden="true">D</span><div><strong>Demo user</strong><span>Local workspace</span></div></div>
@@ -56,7 +61,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
       </aside>
 
       <section className="workspace-main" aria-labelledby="section-heading">
-        <header className="workspace-header"><h1 id="section-heading">{section === "chat" ? "Chat" : "Deploy"}</h1><span className="prototype-badge">Local prototype</span></header>
+        <header className="workspace-header"><h1 id="section-heading">{section === "chat" ? "Chat" : section === "deploy" ? "Deploy" : "Cards"}</h1><span className="prototype-badge">Local prototype</span></header>
         {section === "chat" ? (
           <div className="chat-view">
             <div className="conversation" ref={conversation}>
@@ -84,8 +89,10 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
               <p id="composer-note" className="composer-note">Messages stay in this session. AI isn’t connected yet.</p>
             </div>
           </div>
-        ) : (
+        ) : section === "deploy" ? (
           <Deploy />
+        ) : (
+          <Cards cards={cards} onAdd={(card) => setCards((current) => [...current, card])} />
         )}
       </section>
     </main>

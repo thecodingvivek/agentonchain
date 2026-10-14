@@ -1,6 +1,6 @@
 # Agentonchain frontend
 
-A local login prototype built with Next.js. After login, a sidebar opens a Chat workspace and a Deploy view with the Agentonchain assistant card.
+A local login prototype built with Next.js. After login, a sidebar opens Chat, Deploy, and Cards. Deploy shows the Agentonchain assistant card.
 
 ## Run locally
 
@@ -28,3 +28,7 @@ The environment used for the initial login implementation could not resolve the 
 The official components, `LimePortalProvider`, foundation token tables, and Lime lint remain unavailable. Role names currently map to the existing prototype palette; these mappings are not verified official Lime values. No stand-in components are presented as official Lime components. Token prices use a local `formatAmount` helper with up to eight decimal places so small rates remain visible, pending the official Amount component. Complete the installation and UI review required by `AGENTS.md`, replace the temporary styles with Lime components and tokens, and run the Lime lint before treating the design-system setup as finished.
 
 The Agentonchain assistant card uses the session endpoint on port 2000. Start its backend server using the commands in `../backend/README.md`. Its prices are unconfigured and it has no reviews yet; listing it does not check whether it is running.
+
+## User cards
+
+Open **Cards** in the sidebar to add an agent card with a name, description, optional developer, optional comma-separated skills, and an HTTP or HTTPS endpoint URL. Added cards appear under **Your cards** and remain available when switching tabs. They are held in the current workspace session and clear on reload or sign-out. Adding a card does not call its endpoint, deploy an agent, configure payments, or register it on-chain.

@@ -10,6 +10,9 @@
 .sectionDescription { margin: 0; color: var(--fg-3); font-size: 0.875rem; line-height: 1.5; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); align-items: start; gap: 1rem; margin-top: 0.5rem; }
 .card { display: flex; flex-direction: column; min-width: 0; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+.cardForm { gap: 1rem; width: 100%; max-width: 36rem; }
+.cardForm textarea { width: 100%; min-height: 6rem; resize: vertical; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--page); color: var(--fg); line-height: 1.5; }
+.cardForm textarea::placeholder { color: var(--fg-3); }
 .cardTop { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
 .agentAvatar { display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--page); color: var(--fg); font-size: 1rem; font-weight: 600; }
 .agentName { margin: 0; color: var(--fg); font-size: 1.125rem; font-weight: 600; line-height: 1.5; }
