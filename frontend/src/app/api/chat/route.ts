@@ -1,6 +1,6 @@
 import { readAgentReply, type ChatEvent } from "@/lib/chat-stream";
 
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 export async function POST(request: Request) {
   // This is the local demo's proxy, not an authenticated public chat service.
@@ -14,8 +14,19 @@ export async function POST(request: Request) {
     return Response.json({ error: "Enter a message of up to 8,000 characters." }, { status: 400 });
   }
 
+  if (input.paymentWallet !== undefined && input.paymentWallet !== null) {
+    const wallet = input.paymentWallet;
+    if (typeof wallet.address !== "string" || !/^0x[\da-fA-F]{40}$/.test(wallet.address) || /^0x0{40}$/i.test(wallet.address) ||
+        wallet.chainId !== 84532 || wallet.network !== "base-sepolia" || typeof wallet.maxPerCallUsdc !== "string" ||
+        !/^\d{1,6}(\.\d{1,6})?$/.test(wallet.maxPerCallUsdc) || Number(wallet.maxPerCallUsdc) <= 0) {
+      return Response.json({ error: "Your payment card is invalid. Update it in Cards." }, { status: 400 });
+    }
+  }
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (input.paymentWallet) headers["x-payment-wallet"] = JSON.stringify({ address: input.paymentWallet.address, chainId: 84532, network: "base-sepolia", maxPerCallUsdc: input.paymentWallet.maxPerCallUsdc });
+
   const controller = new AbortController();
-  const signal = AbortSignal.any([request.signal, controller.signal, AbortSignal.timeout(120_000)]);
+  const signal = AbortSignal.any([request.signal, controller.signal, AbortSignal.timeout(180_000)]);
   let sessionId: string;
   let deliveryId: string | undefined;
   let backendUrl: string;
@@ -25,7 +36,7 @@ export async function POST(request: Request) {
     let accepted: Response | undefined;
     for (let attempt = 0; attempt < 4; attempt++) {
       accepted = await fetch(`${backendUrl}${path}`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers,
         body: JSON.stringify({ message: input.message.trim() }), signal, cache: "no-store",
       });
       if (accepted.status !== 409 || attempt === 3) break;

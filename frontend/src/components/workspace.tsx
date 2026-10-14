@@ -61,7 +61,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
     try {
       const response = await fetch("/api/chat", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, ...session.current }), signal: controller.signal,
+        body: JSON.stringify({ message, ...session.current, paymentWallet }), signal: controller.signal,
       });
       if (!response.ok) {
         const result = await response.json().catch(() => ({}));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { PaymentWallet } from "@/lib/payment-wallet";
 import { formatAmount } from "@/lib/format-amount";
 import styles from "./deploy.module.css";
@@ -9,6 +9,15 @@ export function Cards({ wallet, onSave }: { wallet: PaymentWallet | null; onSave
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [signer, setSigner] = useState<{ configured: boolean; address: string | null } | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    const checkSigner = () => fetch("/api/wallet", { signal: controller.signal }).then((response) => response.json()).then((value) => { if (!controller.signal.aborted) setSigner(value); }).catch(() => { if (!controller.signal.aborted) setSigner({ configured: false, address: null }); });
+    void checkSigner();
+    const interval = setInterval(checkSigner, 10_000);
+    return () => { clearInterval(interval); controller.abort(); };
+  }, []);
+  const ready = signer?.configured && wallet?.address.toLowerCase() === signer.address?.toLowerCase();
 
   function saveWallet(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,17 +51,19 @@ export function Cards({ wallet, onSave }: { wallet: PaymentWallet | null; onSave
                 <div><dt>Paying wallet address</dt><dd><code>{wallet.address}</code></dd></div>
                 <div><dt>Currency</dt><dd>Test USDC</dd></div>
                 <div><dt>Maximum per agent call</dt><dd>{formatAmount(Number(wallet.maxPerCallUsdc), "USDC")}</dd></div>
-                <div><dt>Payment status</dt><dd>Wallet signing connection required</dd></div>
+                <div><dt>Payment status</dt><dd>{ready ? "Backend signer connected" : signer?.configured ? "Address must match the backend signer" : signer ? "Backend signer unavailable" : "Checking backend signer…"}</dd></div>
               </dl>
-              <p className={styles.sectionDescription}>A signing wallet must be connected before Chat agent can pay. Your card details stay in this session and clear on reload or sign-out.</p>
+              <p className={styles.sectionDescription}>Chat agent uses the backend wallet to pay a selected agent within your limit. Your card details stay in this session and clear on reload or sign-out.</p>
+              {signer?.address && !ready && <p className={styles.sectionDescription}>Backend wallet: <code>{signer.address}</code></p>}
               <button className={styles.secondaryButton} type="button" onClick={() => { setEditing(true); setNotice(""); }}>Edit payment card</button>
             </article>
           ) : (
             <form className={`${styles.card} ${styles.cardForm}`} onSubmit={saveWallet} aria-describedby="wallet-note" onChange={() => { setError(""); setNotice(""); }}>
               <div className="field-group"><label htmlFor="wallet-address">Paying wallet address</label><input id="wallet-address" name="address" defaultValue={wallet?.address ?? ""} placeholder="0x…" spellCheck={false} autoCapitalize="none" autoComplete="off" maxLength={42} required aria-invalid={Boolean(error)} aria-describedby="wallet-note" /></div>
               <div className="field-group"><label htmlFor="wallet-network">Network</label><input id="wallet-network" value="Base Sepolia · Test USDC" readOnly /></div>
-              <div className="field-group"><label htmlFor="wallet-limit">Maximum USDC per agent call</label><input id="wallet-limit" name="limit" type="text" inputMode="decimal" defaultValue={wallet?.maxPerCallUsdc ?? "0.01"} maxLength={13} required aria-describedby="wallet-limit-note" /><p id="wallet-limit-note" className={styles.sectionDescription}>Each available paid agent currently costs 0.01 USDC per call. This limit is saved for the future payment flow.</p></div>
-              <p id="wallet-note" className={styles.sectionDescription}>Enter your public wallet address. A wallet signing connection is still needed to authorize payments. Card details stay in this session.</p>
+              <div className="field-group"><label htmlFor="wallet-limit">Maximum USDC per agent call</label><input id="wallet-limit" name="limit" type="text" inputMode="decimal" defaultValue={wallet?.maxPerCallUsdc ?? "0.01"} maxLength={13} required aria-describedby="wallet-limit-note" /><p id="wallet-limit-note" className={styles.sectionDescription}>Paid agents cost 0.01 USDC per call. The backend enforces the lower of your card limit and its configured spending cap.</p></div>
+              <p id="wallet-note" className={styles.sectionDescription}>Enter the public address of your backend signing wallet. Card details stay in this session.</p>
+              {signer?.address && <p className={styles.sectionDescription}>Backend wallet: <code>{signer.address}</code></p>}
               {error && <p className="form-error" role="alert">{error}</p>}
               <button type="submit" className="primary-button">{wallet ? "Save changes" : "Save payment card"}</button>
               {wallet && <button type="button" className={styles.secondaryButton} onClick={() => { setEditing(false); setError(""); }}>Cancel editing</button>}
