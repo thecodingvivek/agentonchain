@@ -79,4 +79,30 @@ npm run ask:helper -- "Explain what an API is."
 
 Inspect or build it with `npm run info:helper` and `npm run build:helper`. Serve its built output with `npm run start:helper`.
 
-Both agents appear in the frontend's Explore section with these session endpoints. Their cards are local registrations, not uptime checks: a card does not mean its server is running. The frontend does not invoke either agent yet. Prices and ratings are unconfigured for these local agents. `POST /eve/v1/session` starts a session; answers arrive through eve's session stream.
+The frontend's Explore section currently lists only Agentonchain assistant. Their cards are local registrations, not uptime checks: a card does not mean its server is running. The frontend does not invoke either agent yet. Prices and ratings are unconfigured for these local agents. `POST /eve/v1/session` starts a session; answers arrive through eve's session stream.
+
+## Third agent: Chat agent
+
+`chat-agent/` answers user queries and uses conversation history for follow-ups. It has its own instructions, session history, and server on port **2002**. Like the other agents, it uses Groq directly with no tools. Its launcher loads `backend/.env.local`: set `GROQ_API_KEY`, and optionally `GROQ_MODEL` (default `openai/gpt-oss-20b`). Use Node.js 24 or newer.
+
+From `backend/`, run:
+
+```sh
+npm run dev:chat
+```
+
+In another terminal:
+
+```sh
+npm run ask:chat -- "Explain how an API works in simple terms."
+```
+
+The HTTP endpoint is `POST http://127.0.0.1:2002/eve/v1/session`. Example request:
+
+```sh
+curl -X POST http://127.0.0.1:2002/eve/v1/session \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Explain how an API works in simple terms."}'
+```
+
+The POST returns a session ID. Read the answer from `/eve/v1/session/<sessionId>/stream`, or use `ask:chat` to wait for the result. Inspect with `npm run info:chat`; build with `npm run build:chat` and serve the build with `npm run start:chat`. The frontend does not invoke this agent yet.

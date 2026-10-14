@@ -17,7 +17,12 @@
     "build:helper": "node scripts/run-everyday-helper.mjs build",
     "start:helper": "node scripts/run-everyday-helper.mjs start --host 127.0.0.1 --port 2001",
     "info:helper": "node scripts/run-everyday-helper.mjs info",
-    "ask:helper": "eve invoke --url http://127.0.0.1:2001"
+    "ask:helper": "eve invoke --url http://127.0.0.1:2001",
+    "dev:chat": "node scripts/run-chat-agent.mjs dev --host 127.0.0.1 --port 2002",
+    "build:chat": "node scripts/run-chat-agent.mjs build",
+    "start:chat": "node scripts/run-chat-agent.mjs start --host 127.0.0.1 --port 2002",
+    "info:chat": "node scripts/run-chat-agent.mjs info",
+    "ask:chat": "eve invoke --url http://127.0.0.1:2002"
   },
   "dependencies": {
     "ai": "7.0.127",

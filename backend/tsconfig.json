@@ -15,7 +15,8 @@
   },
   "include": [
     "agent/**/*.ts",
-    "everyday-helper/agent/**/*.ts"
+    "everyday-helper/agent/**/*.ts",
+    "chat-agent/agent/**/*.ts"
   ],
   "exclude": [
     "node_modules",
