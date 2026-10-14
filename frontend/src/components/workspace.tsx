@@ -3,6 +3,8 @@
 import { Deploy } from "@/components/deploy";
 import { Cards } from "@/components/cards";
 import type { MockAgent } from "@/lib/mock-agents";
+import type { ChatEvent } from "@/lib/chat-stream";
+import { readNdjson } from "@/lib/ndjson";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 function Icon({ name }: { name: "chat" | "deploy" | "cards" | "send" | "logout" }) {
@@ -21,7 +23,11 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   const [section, setSection] = useState<"chat" | "deploy" | "cards">("chat");
   const [cards, setCards] = useState<MockAgent[]>([]);
   const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<{ id: string; role: "user" | "assistant"; text: string }[]>([]);
+  const [sending, setSending] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const session = useRef<{ sessionId?: string; streamIndex: number }>({ streamIndex: 0 });
+  const pendingRequest = useRef<AbortController | null>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
   const conversation = useRef<HTMLDivElement>(null);
 
@@ -34,15 +40,55 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
 
   useEffect(() => {
     if (messages.length) conversation.current?.scrollTo({ top: conversation.current.scrollHeight });
-  }, [messages.length, section]);
+  }, [messages, section]);
 
-  function sendMessage(event?: FormEvent<HTMLFormElement>) {
+  useEffect(() => () => pendingRequest.current?.abort(), []);
+
+  async function sendMessage(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     const message = draft.trim();
-    if (!message) return;
-    setMessages((current) => [...current, message]);
+    if (!message || pendingRequest.current) return;
+    const controller = new AbortController();
+    pendingRequest.current = controller;
+    const replyId = crypto.randomUUID();
+    setSending(true);
+    setChatError("");
+    setMessages((current) => [...current, { id: crypto.randomUUID(), role: "user", text: message }, { id: replyId, role: "assistant", text: "" }]);
     setDraft("");
     composer.current?.focus();
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, ...session.current }), signal: controller.signal,
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        if (result.resetSession) session.current = { streamIndex: 0 };
+        throw new Error(result.error || "Could not send your message. Try again.");
+      }
+      if (!response.body) throw new Error("The agent returned no response stream.");
+      let completed = false;
+      for await (const event of readNdjson<ChatEvent>(response.body)) {
+        if (event.type === "session") session.current.sessionId = event.sessionId;
+        else {
+          session.current.streamIndex = Math.max(session.current.streamIndex, event.streamIndex);
+          if (event.type === "text") setMessages((current) => current.map((item) => item.id === replyId ? { ...item, text: event.text } : item));
+          if (event.type === "error") throw new Error(event.message);
+          if (event.type === "done") completed = true;
+        }
+      }
+      if (!completed) throw new Error("The agent connection ended before the reply finished.");
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setChatError(error instanceof Error ? error.message : "Could not reach the chat agent.");
+        setMessages((current) => current.filter((item) => item.id !== replyId || item.text));
+      }
+    } finally {
+      if (pendingRequest.current === controller) {
+        pendingRequest.current = null;
+        setSending(false);
+      }
+    }
   }
 
   return (
@@ -68,11 +114,11 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
               {messages.length === 0 ? (
                 <div className="chat-welcome">
                   <h2>What are we working on?</h2>
-                  <p>A question, an idea, a task.<br />Start a conversation with your agent workspace.</p>
+                  <p>A question, an idea, a task.<br />Start a conversation with Chat agent.</p>
                 </div>
               ) : (
                 <div className="message-list" role="log" aria-label="Chat messages" aria-live="polite" aria-relevant="additions">
-                  {messages.map((message, index) => <article key={index} className="user-message"><span className="message-author">You</span><p>{message}</p></article>)}
+                  {messages.map((message) => <article key={message.id} className={message.role === "user" ? "user-message" : "assistant-message"}><span className="message-author">{message.role === "user" ? "You" : "Chat agent"}</span><p>{message.text || "Thinking…"}</p></article>)}
                 </div>
               )}
             </div>
@@ -80,13 +126,14 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
               <form className="chat-form" onSubmit={sendMessage}>
                 <label htmlFor="chat-message">Message</label>
                 <div className="chat-composer">
-                  <textarea ref={composer} id="chat-message" name="message" rows={1} placeholder="Ask anything, or describe a task…" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
+                  <textarea ref={composer} id="chat-message" name="message" rows={1} maxLength={8000} placeholder="Ask anything, or describe a task…" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); sendMessage(); }
                   }} aria-describedby="composer-note" />
-                  <div className="composer-toolbar"><span className="composer-hint">Shift + Enter for a new line</span><button type="submit" className="send-button" disabled={!draft.trim()} aria-label="Send message"><Icon name="send" /></button></div>
+                  <div className="composer-toolbar"><span className="composer-hint">{sending ? "Chat agent is replying…" : "Shift + Enter for a new line"}</span><button type="submit" className="send-button" disabled={sending || !draft.trim()} aria-label="Send message"><Icon name="send" /></button></div>
                 </div>
               </form>
-              <p id="composer-note" className="composer-note">Messages stay in this session. AI isn’t connected yet.</p>
+              {chatError && <p className="form-error" role="alert">{chatError}</p>}
+              <p id="composer-note" className="composer-note" role="status">{sending ? "Waiting for Chat agent." : "Chat agent · Messages stay in this session."}</p>
             </div>
           </div>
         ) : section === "deploy" ? (

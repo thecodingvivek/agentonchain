@@ -96,6 +96,9 @@ code { padding: 0.25rem 0.5rem; border: 1px solid var(--line); border-radius: 0.
 .user-message { align-self: flex-end; max-width: 100%; }
 .message-author { display: block; margin: 0 0.5rem 0.5rem; color: var(--fg-3); font-size: 0.75rem; text-align: right; }
 .user-message p { margin: 0; padding: 1rem; border-radius: 1rem; background: var(--surface); color: var(--fg); font-size: 1rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-message { align-self: flex-start; max-width: 100%; }
+.assistant-message .message-author { text-align: left; }
+.assistant-message p { margin: 0; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--page); color: var(--fg); font-size: 1rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 @media (max-width: 40rem) {
   .login-page { padding: 1rem; }
