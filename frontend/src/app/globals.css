@@ -1,0 +1,113 @@
+/* Preserve the prototype palette until the official foundation tables can be
+   fetched. These are existing local values, not verified Lime theme values. */
+:root {
+  --background: #ffffff;
+  --foreground: #20251b;
+  --muted: #72776c;
+  --border: #e1e5da;
+  --primary: #c4ef73;
+  --subtle: #f5f6f2;
+}
+
+/* Role names documented in system/lime.md. Replace these mappings with the
+   installed Lime theme when the registry is available. */
+.lime {
+  --page: var(--background);
+  --surface: var(--subtle);
+  --fg: var(--foreground);
+  --fg-3: var(--muted);
+  --line: var(--border);
+  --accent: var(--primary);
+  --on-accent: var(--foreground);
+  background: var(--page);
+  color: var(--fg);
+}
+
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button, input, textarea { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+button { transition: background-color 150ms, opacity 150ms; }
+h1 { margin: 0; font-size: 1.5rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.025em; }
+h2 { margin: 0; font-size: 1.125rem; font-weight: 600; line-height: 1.5; }
+.brand { color: var(--fg); font-size: 1.125rem; font-weight: 600; }
+.prototype-badge { display: inline-flex; align-items: center; width: fit-content; padding: 0.25rem 0.75rem; border: 1px solid var(--line); border-radius: 9999px; background: var(--surface); color: var(--fg-3); font-size: 0.75rem; line-height: 1.5; white-space: nowrap; }
+
+.login-page { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2rem 1.5rem; background: var(--page); }
+.login-page > .brand { align-self: flex-start; }
+.login-card { width: 100%; max-width: 28rem; margin: auto 0; }
+.login-card > .prototype-badge { margin-bottom: 1.5rem; }
+.intro { color: var(--fg-3); font-size: 1rem; line-height: 1.5; margin: 0.75rem 0 0; }
+.login-form { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.field-group, .chat-form { display: flex; flex-direction: column; gap: 0.5rem; }
+label { color: var(--fg); font-size: 0.875rem; font-weight: 600; line-height: 1.5; }
+input { height: 3rem; width: 100%; padding: 0 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--surface); color: var(--fg); font-size: 1rem; }
+input::placeholder { color: var(--fg-3); }
+input[aria-invalid="true"] { border-color: var(--fg); }
+.password-field { position: relative; }
+.password-field input { padding-right: 5rem; }
+.password-toggle { position: absolute; right: 0; top: 0; min-width: 4.5rem; height: 3rem; padding: 0 0.75rem; border: 0; border-radius: 0.75rem; background: transparent; color: var(--fg); font-size: 0.875rem; }
+.password-toggle:hover { background: var(--line); }
+.primary-button { width: 100%; height: 3rem; padding: 0 1.5rem; border: 0; border-radius: 9999px; background: var(--accent); color: var(--on-accent); font-size: 1rem; font-weight: 600; }
+.primary-button:hover, .send-button:hover:not(:disabled) { opacity: 0.85; }
+.form-error { margin: 0; color: var(--fg); font-size: 0.875rem; line-height: 1.5; }
+.demo-note { margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+.demo-note p { margin: 0.75rem 0 1rem; color: var(--fg-3); font-size: 0.875rem; line-height: 1.5; }
+.demo-credentials { display: flex; flex-direction: column; gap: 0.75rem; margin: 0; font-size: 0.875rem; }
+.demo-credentials > div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.demo-credentials dt { color: var(--fg-3); }
+.demo-credentials dd { margin: 0; }
+code { padding: 0.25rem 0.5rem; border: 1px solid var(--line); border-radius: 0.25rem; background: var(--page); color: var(--fg); font-family: ui-monospace, monospace; font-size: 0.875rem; }
+.form-footnote, .page-footer { color: var(--fg-3); font-size: 0.75rem; line-height: 1.5; text-align: center; }
+.form-footnote { margin: 1rem 0 0; }
+
+.workspace { display: flex; height: 100dvh; overflow: hidden; background: var(--page); }
+.sidebar { display: flex; flex-direction: column; width: 16rem; flex-shrink: 0; padding: 2rem 1rem 1rem; border-right: 1px solid var(--line); background: var(--surface); overflow-y: auto; }
+.sidebar-brand { padding: 0 0.75rem; margin-bottom: 2rem; }
+.sidebar-brand-short { display: none; }
+.workspace-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.nav-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; min-height: 3rem; padding: 0.75rem; border: 0; border-radius: 0.75rem; background: transparent; color: var(--fg-3); font-size: 0.875rem; text-align: left; }
+.nav-item:hover { background: var(--line); color: var(--fg); }
+.nav-item.active { background: var(--page); color: var(--fg); font-weight: 600; }
+.sidebar-bottom { margin-top: auto; padding-top: 2rem; }
+.sidebar-profile { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 0.75rem; border-top: 1px solid var(--line); }
+.avatar { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2.5rem; height: 2.5rem; border: 1px solid var(--line); border-radius: 9999px; background: var(--page); color: var(--fg); font-size: 0.875rem; }
+.sidebar-profile strong { display: block; color: var(--fg); font-size: 0.875rem; font-weight: 600; }
+.sidebar-profile div > span { display: block; margin-top: 0.25rem; color: var(--fg-3); font-size: 0.75rem; }
+.workspace-main { display: flex; flex-direction: column; flex: 1; min-width: 0; background: var(--page); }
+.workspace-header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 3.5rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--line); background: var(--page); }
+.chat-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.conversation { flex: 1; min-height: 0; overflow-y: auto; padding: 2rem 1.5rem; }
+.chat-welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; gap: 0.75rem; padding: 2rem 0; text-align: center; }
+.chat-welcome > p { margin: 0; color: var(--fg-3); font-size: 1rem; line-height: 1.5; }
+.composer-area { width: 100%; max-width: 42rem; margin: 0 auto; padding: 1rem 1.5rem max(1rem, env(safe-area-inset-bottom)); }
+.chat-composer { padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
+.chat-composer textarea { display: block; width: 100%; min-height: 3rem; max-height: 12rem; resize: none; padding: 0.5rem; border: 0; border-radius: 0.25rem; background: transparent; color: var(--fg); font-size: 1rem; line-height: 1.5; overflow-y: auto; }
+.chat-composer textarea::placeholder { color: var(--fg-3); }
+.composer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.75rem; }
+.composer-hint { color: var(--fg-3); font-size: 0.75rem; line-height: 1.5; }
+.send-button { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 3rem; height: 3rem; border: 0; border-radius: 9999px; background: var(--accent); color: var(--on-accent); }
+.send-button:disabled { background: var(--line); color: var(--fg-3); cursor: default; }
+.composer-note { margin: 0.75rem 0 0; color: var(--fg-3); font-size: 0.75rem; line-height: 1.5; text-align: center; }
+.message-list { display: flex; flex-direction: column; gap: 1.5rem; max-width: 42rem; margin: 0 auto; }
+.user-message { align-self: flex-end; max-width: 100%; }
+.message-author { display: block; margin: 0 0.5rem 0.5rem; color: var(--fg-3); font-size: 0.75rem; text-align: right; }
+.user-message p { margin: 0; padding: 1rem; border-radius: 1rem; background: var(--surface); color: var(--fg); font-size: 1rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 40rem) {
+  .login-page { padding: 1rem; }
+  h1 { font-size: 1.25rem; }
+  .sidebar { width: 5.5rem; padding: 1.5rem 0.5rem 1rem; }
+  .sidebar-brand { padding: 0; margin-bottom: 1.5rem; text-align: center; }
+  .sidebar-brand-short { display: inline; }
+  .sidebar-brand-name, .sidebar-profile { display: none; }
+  .nav-item { flex-direction: column; gap: 0.5rem; padding: 0.75rem 0.25rem; font-size: 0.75rem; }
+  .workspace-header { padding: 0.75rem 1rem; }
+  .conversation { padding: 1rem; }
+  .composer-area { padding-right: 1rem; padding-left: 1rem; }
+  .composer-toolbar { align-items: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) { button { transition: none; } }
