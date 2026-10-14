@@ -2,6 +2,8 @@
 
 Three Groq-powered eve agents run independently. Agentonchain assistant and Everyday helper sell answers through x402-protected MCP tools. Chat agent remains free and powers the frontend Chat interface.
 
+Start all three from one terminal with `npm run dev:all`. The script loads `.env.local`, checks ports 2000–2002, and stops all three when you press Ctrl+C. Stop any individually running agents first. The frontend still runs separately. See [Payments and agent access](PAYMENTS.md) for the complete payment and MCP flow.
+
 | Agent | Start command (from backend/) | Query endpoint | Price |
 | --- | --- | --- | --- |
 | Agentonchain assistant | `npm run dev` | `http://127.0.0.1:2000/mcp` | 0.01 test USDC / `ask_agent` call |

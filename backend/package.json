@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "eve dev --host 127.0.0.1 --port 2000",
+    "dev:all": "node scripts/run-all-agents.mjs",
     "build": "eve build",
     "start": "eve start --host 127.0.0.1 --port 2000",
     "info": "eve info",
