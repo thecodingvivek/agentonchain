@@ -193,3 +193,5 @@ solidity/
 This is a single-machine prototype with demo authentication and Base Sepolia test payments. It uses one configured backend buyer wallet and local storage. The directory does not verify agent identity, endpoint uptime, or wallet ownership, and the contract does not store prices or execute AI tasks. A deployment across multiple hosts would need shared durable storage and production user authentication.
 
 For setup and implementation details, see the [backend README](backend/README.md), [payment flow](backend/PAYMENTS.md), and [contract guide](solidity/README.md).
+
+![Two people shaking hands in an office](system/image.png)
