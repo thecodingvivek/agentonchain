@@ -5,6 +5,8 @@ import type { RegistryAgent, RegistryPage } from "@/lib/registry-agents";
 import styles from "./deploy.module.css";
 import { RegisterAgent } from "./register-agent";
 
+type RegistryRequest = { active: boolean };
+
 function AgentCard({ agent }: { agent: RegistryAgent }) {
   const initials = agent.name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "A";
   return (
@@ -39,16 +41,18 @@ export function Deploy() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
-  const pending = useRef<AbortController | null>(null);
+  const pending = useRef<RegistryRequest | null>(null);
 
-  const fetchPage = useCallback(async (offset: string, controller: AbortController) => {
-    if (controller.signal.aborted) return;
+  const fetchPage = useCallback(async (offset: string, request: RegistryRequest) => {
+    if (!request.active) return;
     try {
-      const response = await fetch(`/api/agents?offset=${offset}`, { cache: "no-store", signal: controller.signal });
+      // Let the read finish during unmount/Strict Mode cleanup; ignore its result
+      // instead of aborting a fetch that Next's development overlay may report.
+      const response = await fetch(`/api/agents?offset=${offset}`, { cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Could not fetch registered agents.");
       if (!Array.isArray(result.agents)) throw new Error("The registry returned an invalid response.");
-      if (controller.signal.aborted) return;
+      if (!request.active) return;
       const next = result as RegistryPage;
       setPage((current) => offset === "0" || !current ? next : {
         ...next,
@@ -57,29 +61,32 @@ export function Deploy() {
       setUpdatedAt(new Date().toLocaleTimeString());
       setError("");
     } catch (cause) {
-      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Could not fetch registered agents.");
+      if (request.active) setError(cause instanceof Error ? cause.message : "Could not fetch registered agents.");
     } finally {
-      if (pending.current === controller) {
+      if (pending.current === request) {
         pending.current = null;
-        if (!controller.signal.aborted) setLoading(false);
+        if (request.active) setLoading(false);
       }
     }
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-    pending.current = controller;
-    void Promise.resolve().then(() => fetchPage("0", controller));
-    return () => { pending.current?.abort(); pending.current = null; };
+    const request = { active: true };
+    pending.current = request;
+    void Promise.resolve().then(() => fetchPage("0", request));
+    return () => {
+      if (pending.current) pending.current.active = false;
+      pending.current = null;
+    };
   }, [fetchPage]);
 
   function load(offset = "0") {
     if (pending.current) return;
-    const controller = new AbortController();
-    pending.current = controller;
+    const request = { active: true };
+    pending.current = request;
     setLoading(true);
     setError("");
-    void fetchPage(offset, controller);
+    void fetchPage(offset, request);
   }
 
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -107,7 +114,7 @@ export function Deploy() {
           </p>
           {error && <p className="form-error" role="alert">{error}</p>}
           {registering && page && <RegisterAgent contractAddress={page.contractAddress} onClose={() => setRegistering(false)} onRegistered={() => {
-            pending.current?.abort();
+            if (pending.current) pending.current.active = false;
             pending.current = null;
             setQuery("");
             load();
