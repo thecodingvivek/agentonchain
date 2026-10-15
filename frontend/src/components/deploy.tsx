@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RegistryAgent, RegistryPage } from "@/lib/registry-agents";
 import styles from "./deploy.module.css";
+import { RegisterAgent } from "./register-agent";
 
 function AgentCard({ agent }: { agent: RegistryAgent }) {
   const initials = agent.name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "A";
@@ -33,6 +34,7 @@ function AgentCard({ agent }: { agent: RegistryAgent }) {
 
 export function Deploy() {
   const [query, setQuery] = useState("");
+  const [registering, setRegistering] = useState(false);
   const [page, setPage] = useState<RegistryPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -93,7 +95,10 @@ export function Deploy() {
         <section className={styles.section} aria-labelledby="explore-heading" aria-busy={loading}>
           <div className={styles.sectionHeading}>
             <h2 id="explore-heading">Explore agents</h2>
-            <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => load()} aria-label="Refresh agents">Refresh agents</button>
+            <div className={styles.actions}>
+              <button className={styles.secondaryButton} type="button" disabled={loading} onClick={() => load()} aria-label="Refresh agents">Refresh agents</button>
+              {!registering && <button className={`primary-button ${styles.deployButton}`} type="button" disabled={!page} onClick={() => setRegistering(true)}>Deploy agent</button>}
+            </div>
           </div>
           <p className={styles.sectionDescription}>Agent names, wallets, and endpoints come from the deployed registry. Active status is set by the entry owner.</p>
           {page && <p className={styles.sectionDescription}>Registry <a href={`https://sepolia.basescan.org/address/${page.contractAddress}`} target="_blank" rel="noreferrer">{page.contractAddress}</a></p>}
@@ -101,6 +106,12 @@ export function Deploy() {
             {loading ? "Fetching agents from Base Sepolia…" : page ? `${page.agents.length} of ${page.total} registrations loaded · Last fetched ${updatedAt}${error ? " · Showing previous results" : ""}` : "No registry data loaded."}
           </p>
           {error && <p className="form-error" role="alert">{error}</p>}
+          {registering && page && <RegisterAgent contractAddress={page.contractAddress} onClose={() => setRegistering(false)} onRegistered={() => {
+            pending.current?.abort();
+            pending.current = null;
+            setQuery("");
+            load();
+          }} />}
           {page && <>
             <div className={styles.search}>
               <label htmlFor="agent-search">Search loaded agents</label>
@@ -109,7 +120,7 @@ export function Deploy() {
             {matches.length > 0 ? <div className={styles.grid}>{matches.map((agent) => <AgentCard key={agent.id} agent={agent} />)}</div> : (
               <div className={styles.empty}>
                 <h3>{page.total === "0" ? "No agents registered yet" : "No matching agents"}</h3>
-                <p>{page.total === "0" ? "Add an agent in Remix, then refresh this directory." : "Try a different search or load more registrations."}</p>
+                <p>{page.total === "0" ? "Use Deploy agent to register your first agent." : "Try a different search or load more registrations."}</p>
                 {query && <button type="button" onClick={() => setQuery("")}>Clear search</button>}
               </div>
             )}

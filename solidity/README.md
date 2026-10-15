@@ -35,4 +35,8 @@ The contract emits `AgentAdded`, `AgentUpdated`, and `AgentStatusChanged` events
 
 Set `CONTRACT_ADDRESS` in `backend/.env.local` to your deployed address on Base Sepolia. Optionally configure `BASE_SEPOLIA_RPC_URL` (defaults to `https://sepolia.base.org`). Restart Chat agent, open **Deploy** in the frontend, and click **Refresh agents** after adding or updating an entry in Remix.
 
+You can also register directly in the app: click **Deploy agent**, fill in the form, review it, and confirm the transaction in your browser wallet. Supply a name and public payment wallet; description and endpoint are optional. The app calls `addAgent` for basic entries or `addAgentWithDetails` when details are supplied. Your browser wallet must have Base Sepolia ETH for gas. The UI refreshes the directory after receiving a successful `AgentAdded` receipt.
+
+For an Everyday helper test, enter `Everyday helper`, description `Answers everyday questions and provides practical step-by-step help.`, endpoint `http://127.0.0.1:2001/mcp`, and the public `X402_RECIPIENT` address from your backend configuration as the payment wallet. The endpoint is local to your machine. Start the service with `npm run dev:helper` from `backend/` to use it; registration alone does not run it.
+
 The directory uses read-only calls and requires no private key. A refresh fetches every page at one block and saves `backend/data/agents.json`; the UI displays pages of 24 entries, including inactive ones. Chat agent's `list_agents` tool reads the same file and lists active entries. Only the contract's stored fields are shown; prices and service availability are not inferred. Displaying a registration does not add it to Chat agent's trusted paid-agent list.

@@ -34,7 +34,9 @@ This selects Everyday helper for a paid request. Asking Chat agent the same ques
 
 ### Agent discovery
 
-The **Deploy** tab fetches agent cards from the deployed `AgentRegistry` contract. Each card shows the agent's name, description, payment wallet, endpoint, owner, and active status. It is a directory view; it does not deploy a server or a smart contract.
+The **Deploy** tab fetches agent cards from the deployed `AgentRegistry` contract. Each card shows the agent's name, description, payment wallet, endpoint, owner, and active status. **Deploy agent** opens a registration card for an existing service; it does not start a server or deploy another smart contract.
+
+Enter the agent's name and public payment wallet, plus an optional description and endpoint. Review the details, then click **Confirm in wallet** to connect a browser wallet such as MetaMask and submit on Base Sepolia. The signing account owns the registry entry and needs test ETH for gas. Only that browser wallet signs; no private key is entered into the form. Basic entries call `addAgent`, while entries with descriptions or endpoints call `addAgentWithDetails`. The UI waits for a successful receipt containing `AgentAdded` before reporting registration success and refreshing the directory and shared JSON.
 
 Click **Refresh agents** after registering or updating an entry in Remix. Entries load in pages of 24, with **Load more agents** for additional pages and search across loaded entries. The directory includes inactive entries and handles empty registries and RPC errors without showing mock agents. A failed refresh preserves the previous results and labels them accordingly.
 
@@ -175,7 +177,7 @@ The frontend defaults to Chat agent at `http://127.0.0.1:2002`. Set the server-s
 
 Open **Cards**, save the public address shown for the configured backend signer, and set a per-call limit of at least `0.01` USDC. Then ask Chat agent to use Agentonchain assistant or Everyday helper.
 
-To populate **Deploy**, set `CONTRACT_ADDRESS` in `backend/.env.local` to your deployed registry address, restart Chat agent, add entries through Remix, and click **Refresh agents**. Use `addAgent(name, wallet)` or `addAgentWithDetails(name, wallet, description, endpointUrl)`; the contract does not have `registerAgent` or store prices. Ask Chat agent to list available agents to read the saved directory. Paid delegation continues to use the backend's trusted seller configuration.
+To populate **Deploy**, set `CONTRACT_ADDRESS` in `backend/.env.local` to your deployed registry address, restart Chat agent, and use **Deploy agent**. You can also add entries through Remix and click **Refresh agents**. The contract does not have `registerAgent` or store prices. Ask Chat agent to list available agents to read the saved directory. Paid delegation continues to use the backend's trusted seller configuration.
 
 ## Current scope
 
