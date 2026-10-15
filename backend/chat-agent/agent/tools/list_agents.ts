@@ -1,12 +1,11 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { registeredAgents } from "../../../payments/agent-registry";
+import { listCachedAgents } from "../../../registry/agent-cache";
 
 export default defineTool({
-  description: "List all agents registered in this backend project, with their names, descriptions, skills, and query endpoints and payment requirements. Registration does not confirm that a server is running. Browser-only custom cards are not backend registrations.",
+  description: "List active agents from the same local JSON directory saved when Deploy fetches or refreshes the on-chain registry. Returns names, descriptions, wallets, endpoints, and snapshot time. Inactive entries are excluded. Registry data does not verify server uptime, identity, price, or authorization for paid invocation. If the file is missing, ask the user to refresh Deploy.",
   inputSchema: z.object({}),
   execute() {
-    const agents = registeredAgents;
-    return { agents, total: agents.length, availability: "Registered agents; server availability has not been checked." };
+    return listCachedAgents();
   },
 });

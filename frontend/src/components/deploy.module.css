@@ -18,6 +18,15 @@
 .walletDetails dd { margin: 0; color: var(--fg); font-size: 0.875rem; line-height: 1.5; overflow-wrap: anywhere; }
 .walletDetails code { display: block; }
 .secondaryButton { width: fit-content; min-height: 3rem; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 9999px; background: var(--page); color: var(--fg); font-size: 0.875rem; font-weight: 600; }
+.secondaryButton:disabled { opacity: 0.5; cursor: wait; }
+.registryDetails { margin-top: 1.5rem; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.actions :global(.primary-button), .deployButton { width: auto; }
+.registrationCard { gap: 1.5rem; width: 100%; max-width: 36rem; margin-top: 0.5rem; }
+.registrationForm { display: flex; flex-direction: column; gap: 1rem; }
+.registrationTextarea { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--page); color: var(--fg); resize: vertical; }
+.registrationCard button:disabled, .deployButton:disabled { opacity: 0.5; cursor: wait; }
+.sectionDescription a { color: var(--fg); overflow-wrap: anywhere; }
 .cardTop { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
 .agentAvatar { display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--page); color: var(--fg); font-size: 1rem; font-weight: 600; }
 .agentName { margin: 0; color: var(--fg); font-size: 1.125rem; font-weight: 600; line-height: 1.5; }

@@ -8,3 +8,5 @@ dist/
 *.log
 *.tsbuildinfo
 .DS_Store
+/data/agents.json
+/data/agents.json.*.tmp

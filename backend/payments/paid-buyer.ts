@@ -69,6 +69,22 @@ type BuyerDependencies = {
   connect?: (client: x402MCPClient, endpoint: string, signal: AbortSignal) => Promise<void>;
 };
 
+class SellerResponseError extends Error {}
+
+/** Extract only the seller's public error text, never payment authorizations or signatures. */
+function sellerError(content: { type: string; text?: unknown }[]): string {
+  for (const item of content) {
+    if (item.type !== "text" || typeof item.text !== "string") continue;
+    try {
+      const value = JSON.parse(item.text);
+      if (typeof value.error === "string") return value.error.slice(0, 240);
+    } catch {
+      if (item.text.startsWith("The agent could not answer") || item.text.startsWith("Paid tool unavailable")) return item.text.slice(0, 240);
+    }
+  }
+  return "The seller returned an error without a confirmed answer or settlement receipt.";
+}
+
 export async function invokePaidAgent(input: InvokeInput, dependencies: BuyerDependencies = {}) {
   const env = dependencies.env ?? process.env;
   const agent = seller(input.agentId);
@@ -110,15 +126,17 @@ export async function invokePaidAgent(input: InvokeInput, dependencies: BuyerDep
       reconnectionOptions: { maxRetries: 0, initialReconnectionDelay: 1000, maxReconnectionDelay: 1000, reconnectionDelayGrowFactor: 1 },
     }));
     const result = await client.callTool("ask_agent", { query: input.query.trim() }, { signal, timeout: 120_000 });
-    if (result.isError || !result.paymentMade || !result.paymentResponse?.success || result.paymentResponse.network !== BASE_SEPOLIA ||
-        !/^0x[\da-fA-F]{64}$/.test(result.paymentResponse.transaction)) throw new Error("No confirmed paid result was returned.");
+    if (result.isError) throw new SellerResponseError(sellerError(result.content));
+    if (!result.paymentMade || !result.paymentResponse?.success || result.paymentResponse.network !== BASE_SEPOLIA ||
+        !/^0x[\da-fA-F]{64}$/.test(result.paymentResponse.transaction)) throw new SellerResponseError("The seller did not return a valid Base Sepolia settlement receipt.");
     const answer = result.content.filter((item) => item.type === "text" && typeof item.text === "string").map((item) => item.text).join("\n\n");
     if (!answer.trim()) throw new Error("The seller returned an empty answer.");
     const output = { agentId: agent.id, agent: agent.name, answer, payment: { amountUsdc: "0.01", network: "base-sepolia", transaction: result.paymentResponse.transaction, payer: account.address, recipient } };
     reservation.complete(output);
     return output;
-  } catch {
-    reservation.fail();
-    throw new Error(signingStarted ? "The paid request did not return a confirmed result. Payment may have been submitted; check the wallet before trying again. No automatic retry was made." : "Could not invoke the paid agent. Check that the seller is running and its payment request matches the configured price, recipient, and network.");
+  } catch (error) {
+    const reason = error instanceof SellerResponseError ? error.message : "Connection, payment policy, or payment processing failed.";
+    reservation.fail({ reason, paymentMayHaveSettled: signingStarted });
+    throw new Error(`${reason} ${signingStarted ? "Payment may have been submitted; check the wallet before trying again. No automatic retry was made." : "Check that the seller is running and its payment request matches the configured price, recipient, and network."}`);
   } finally { await client.close().catch(() => {}); }
 }

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-type RecordState = { intent: string; state: "reserved" | "signing" | "completed" | "failed"; result?: unknown };
+type RecordState = { intent: string; state: "reserved" | "signing" | "completed" | "failed"; result?: unknown; failure?: { reason: string; paymentMayHaveSettled: boolean } };
 
 /** Single-host durable guard: at most one paid invocation per chat turn. */
 export class PaymentLedger {
@@ -31,7 +31,7 @@ export class PaymentLedger {
     return {
       markSigning: () => write({ intent, state: "signing" }),
       complete: (result: unknown) => write({ intent, state: "completed", result }),
-      fail: () => write({ intent, state: "failed" }),
+      fail: (failure?: RecordState["failure"]) => write({ intent, state: "failed", failure }),
     };
   }
 }
