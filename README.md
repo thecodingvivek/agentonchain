@@ -194,4 +194,5 @@ This is a single-machine prototype with demo authentication and Base Sepolia tes
 
 For setup and implementation details, see the [backend README](backend/README.md), [payment flow](backend/PAYMENTS.md), and [contract guide](solidity/README.md).
 
+### working don't know how
 ![Two people shaking hands in an office](system/image.png)
