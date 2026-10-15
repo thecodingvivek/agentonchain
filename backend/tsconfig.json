@@ -17,7 +17,8 @@
     "agent/**/*.ts",
     "everyday-helper/agent/**/*.ts",
     "chat-agent/agent/**/*.ts",
-    "payments/*.ts"
+    "payments/*.ts",
+    "registry/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -76,7 +76,7 @@ npm run ask:chat -- "Explain what an API is."
 
 The frontend Chat interface uses its `/api/chat` proxy to send queries to Chat agent, streams replies, and retains the session for follow-ups. `POST /eve/v1/session` accepts `{ "message": "your query" }` and returns a session ID. Read events at `/eve/v1/session/<sessionId>/stream`; follow-ups go to `POST /eve/v1/session/<sessionId>`. `ask:chat` waits for the answer.
 
-Chat agent's read-only `list_agents` tool lists all three registrations with descriptions and endpoints, including the sellers' MCP tool names, prices, and network. The shared registry is in `payments/agent-registry.ts`. It does not check server uptime or include frontend session-only custom cards. Asking Chat agent to list agents remains free. Optional built-in tools remain disabled on all agents.
+Chat agent's read-only `list_agents` tool reads `backend/data/agents.json`, the same directory snapshot updated when Deploy opens or Refresh agents succeeds. It lists entries marked active, with names, descriptions, wallets, endpoints, and snapshot time. Inactive entries remain in the file but are excluded from the available-agent list. Discovery does not verify server uptime, identity, pricing, or payment eligibility. Missing or invalid snapshots produce refresh instructions rather than static fallback agents. Asking Chat agent to list agents remains free. Optional built-in tools remain disabled on all agents.
 
 ## Chat agent as an x402 buyer
 
@@ -97,6 +97,18 @@ Before signing, the buyer requires x402 v2, the exact scheme, Base Sepolia (`eip
 A local ledger under the Chat agent's ignored `.eve/paid-calls/` directory reserves one paid invocation per chat turn. A replay of a completed identical call returns its cached answer and receipt. In-progress, failed, changed, and uncertain attempts are not automatically paid again. A network failure after authorization may have settled; check the wallet before explicitly trying again. Keep this ledger when restarting the local server. This guard is for one host with shared local storage; distributed deployment requires a shared durable ledger and real user authentication. The frontend mock login is a local demo, not authorization for a shared production wallet.
 
 `GET /payments/wallet` returns only public signer metadata (`configured`, address, network, chain ID, and cap). The frontend's `/api/wallet` proxy uses it to show signer status in Cards. It never returns a private key or signed authorization.
+
+## On-chain directory for Deploy
+
+Set `CONTRACT_ADDRESS` in `backend/.env.local` to the Base Sepolia address of the contract in `solidity/AgentRegistry.sol`. Optionally set `BASE_SEPOLIA_RPC_URL`; it defaults to `https://sepolia.base.org`. Restart Chat agent after changing configuration.
+
+Chat agent exposes `GET /registry/agents?offset=0`. Offset zero fetches `getAgentCount()` and every `getAgents(offset, 24)` page with ethers at one consistent block number, then atomically saves the complete snapshot to `backend/data/agents.json`. Other offsets paginate that saved snapshot. The endpoint returns `{ agents, total, contractAddress, chainId, blockNumber, updatedAt, nextOffset }`. IDs, totals, and offsets are decimal strings for safe JSON serialization. Each entry includes `id`, `name`, `wallet`, `owner`, `description`, `endpointUrl`, and `active`. No signing key is used.
+
+The frontend `/api/agents` proxy uses `CHAT_AGENT_URL` to reach this endpoint. Deploy loads the first page on entry, supports refresh and additional pages, and searches loaded entries. HTTP responses are uncached. Failed or incomplete refreshes preserve the existing JSON file; successful empty refreshes clear previous entries. Concurrent refreshes share one fetch. Configuration errors, incorrect network, missing bytecode, ABI mismatches, and unavailable RPCs return errors instead of mock data.
+
+The generated JSON contains public registry data and is ignored by Git. Its path is resolved from the backend package so development and built Chat agent use the same file. Optionally set `AGENT_REGISTRY_CACHE_FILE` to an absolute path for persistent storage elsewhere. Chat discovery reads the file afresh on each call, without restarting the agent or querying the chain. For deployments with multiple hosts, use shared persistent storage or a database.
+
+This read-only directory is separate from `payments/agent-registry.ts`: on-chain registrations do not expand the paid buyer's trusted endpoint list. Test it with `npm run test:registry`; these tests use a local mock JSON-RPC server and real ethers ABI encoding/decoding.
 
 ## Validation and production builds
 

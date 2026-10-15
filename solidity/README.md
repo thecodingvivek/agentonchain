@@ -29,4 +29,10 @@ Names must be 1–128 bytes, descriptions at most 2,048 bytes, and endpoints at 
 
 For this project's paid agents, the endpoint is `/mcp`, for example `http://127.0.0.1:2000/mcp` during local development. A loopback URL only works on the caller's own machine; use a reachable deployed endpoint for a shared directory.
 
-The contract emits `AgentAdded`, `AgentUpdated`, and `AgentStatusChanged` events. It stores registration data only and does not handle payments or connect to the frontend automatically. If you already deployed the earlier contract, deploy this version to a new address; existing registrations are not migrated.
+The contract emits `AgentAdded`, `AgentUpdated`, and `AgentStatusChanged` events. It stores registration data only and does not handle payments. If you already deployed the earlier contract, deploy this version to a new address; existing registrations are not migrated.
+
+## Show entries in the app
+
+Set `CONTRACT_ADDRESS` in `backend/.env.local` to your deployed address on Base Sepolia. Optionally configure `BASE_SEPOLIA_RPC_URL` (defaults to `https://sepolia.base.org`). Restart Chat agent, open **Deploy** in the frontend, and click **Refresh agents** after adding or updating an entry in Remix.
+
+The directory uses read-only calls and requires no private key. A refresh fetches every page at one block and saves `backend/data/agents.json`; the UI displays pages of 24 entries, including inactive ones. Chat agent's `list_agents` tool reads the same file and lists active entries. Only the contract's stored fields are shown; prices and service availability are not inferred. Displaying a registration does not add it to Chat agent's trusted paid-agent list.

@@ -4,7 +4,7 @@ Agentonchain is a prototype workspace for discovering AI agents, talking to them
 
 The idea is simple: a user can ask a conversational agent for help, choose another agent for a task, and let the conversational agent pay that provider within a configured spending limit. Agent providers expose their services through paid endpoints and receive USDC for successful requests.
 
-The current implementation runs locally. Payments use **test USDC on Base Sepolia**, and all three agents use Groq for their model responses. The Solidity registry is a separate contract that can be deployed through Remix; the app does not read from it yet.
+The current implementation runs locally. Payments use **test USDC on Base Sepolia**, and all three agents use Groq for their model responses. The Deploy tab reads agents from a Solidity registry deployed through Remix on Base Sepolia.
 
 ## What the project demonstrates
 
@@ -16,7 +16,7 @@ Agentonchain explores that workflow through three parts:
 2. **An agent backend** where a free conversational agent can call paid agents through a payment-aware protocol.
 3. **An on-chain directory** that stores an agent's name, wallet, description, endpoint, and active status.
 
-The backend payment flow and the Solidity directory are currently independent. Registering an agent in the contract does not automatically make it available to Chat agent.
+The Deploy directory and Chat agent's discovery tool share a local JSON snapshot of the Solidity registry. Registering an agent in the contract and refreshing Deploy makes it discoverable to Chat agent. Paid invocation still uses the separately configured trusted seller list.
 
 ## The user experience
 
@@ -34,9 +34,13 @@ This selects Everyday helper for a paid request. Asking Chat agent the same ques
 
 ### Agent discovery
 
-The **Deploy** tab currently displays a searchable local agent card with a description, skills, and endpoint information. It is a directory view; it does not deploy a server or a smart contract.
+The **Deploy** tab fetches agent cards from the deployed `AgentRegistry` contract. Each card shows the agent's name, description, payment wallet, endpoint, owner, and active status. It is a directory view; it does not deploy a server or a smart contract.
 
-The frontend card data is separate from the backend registry and currently lists only Agentonchain assistant. Its displayed endpoint and payment details still need to be aligned with the paid backend. Chat agent's `list_agents` tool uses the backend registry, which includes all three agents.
+Click **Refresh agents** after registering or updating an entry in Remix. Entries load in pages of 24, with **Load more agents** for additional pages and search across loaded entries. The directory includes inactive entries and handles empty registries and RPC errors without showing mock agents. A failed refresh preserves the previous results and labels them accordingly.
+
+Registry reads use ethers with a provider on the backend, without a signing wallet or private key. The frontend calls `/api/agents`, which proxies Chat agent's `/registry/agents` endpoint. Opening Deploy or clicking Refresh fetches the entire directory at one block and saves it to `backend/data/agents.json`. Further UI pages read the saved snapshot.
+
+Chat agent's `list_agents` tool reads that same JSON file on every call and lists entries marked active, with their descriptions, wallets, endpoints, and snapshot time. A successful refresh replaces the file, including when the registry becomes empty; a failed fetch keeps the previous results. If no valid snapshot exists, Chat agent asks the user to refresh Deploy. Displaying or listing an entry does not authorize calling its endpoint or paying its wallet.
 
 ### Payment card
 
@@ -50,7 +54,7 @@ Login state, visible chat messages, and the saved card stay in the current brows
 
 | Agent | Role | Local endpoint | Cost |
 | --- | --- | --- | --- |
-| Chat agent | Answers questions, lists registered agents, and invokes a selected paid agent | `http://127.0.0.1:2002/eve/v1/session` | Free |
+| Chat agent | Answers questions, lists active agents from the saved Deploy directory, and invokes a selected trusted paid agent | `http://127.0.0.1:2002/eve/v1/session` | Free |
 | Agentonchain assistant | Answers general questions with explanations and examples | `http://127.0.0.1:2000/mcp` | 0.01 test USDC per call |
 | Everyday helper | Answers everyday questions with practical guidance | `http://127.0.0.1:2001/mcp` | 0.01 test USDC per call |
 
@@ -105,13 +109,15 @@ backend/
   everyday-helper/      Paid Everyday helper
   chat-agent/           Free Chat agent and its discovery/payment tools
   payments/             Trusted registry, x402 buyer/seller, and local ledger
+  registry/             Read-only ethers integration with the on-chain directory
+  data/agents.json      Generated shared directory for Deploy and Chat discovery
   scripts/              Commands for running the agent services
 
 solidity/
   AgentRegistry.sol     Standalone on-chain agent directory
 ```
 
-The frontend uses **Next.js, React, and TypeScript**. The backend uses **Eve, Groq, MCP, x402, and viem**. The registry is written in **Solidity**.
+The frontend uses **Next.js, React, and TypeScript**. The backend uses **Eve, Groq, MCP, x402, viem, and ethers**. The registry is written in **Solidity**.
 
 ## Run locally
 
@@ -136,6 +142,8 @@ Set the relevant values in `backend/.env.local`:
 | `ACC_PRIVATE_KEY` | Dedicated buyer-wallet private key used by Chat agent for paid requests |
 | `X402_MAX_PER_CALL_USDC` | Backend spending cap; defaults to `0.01` |
 | `X402_FACILITATOR_URL` | Optional facilitator URL; defaults to `https://x402.org/facilitator` |
+| `CONTRACT_ADDRESS` | Deployed `AgentRegistry` address on Base Sepolia, used by Deploy |
+| `BASE_SEPOLIA_RPC_URL` | Optional registry RPC URL; defaults to `https://sepolia.base.org` |
 
 The buyer wallet needs Base Sepolia test USDC for paid requests. Keep private keys in the ignored backend environment file; the Cards form takes only the public address and spending limit.
 
@@ -167,11 +175,11 @@ The frontend defaults to Chat agent at `http://127.0.0.1:2002`. Set the server-s
 
 Open **Cards**, save the public address shown for the configured backend signer, and set a per-call limit of at least `0.01` USDC. Then ask Chat agent to use Agentonchain assistant or Everyday helper.
 
-Deploying the Solidity registry is optional for this local flow because the backend currently uses its own static agent registry.
+To populate **Deploy**, set `CONTRACT_ADDRESS` in `backend/.env.local` to your deployed registry address, restart Chat agent, add entries through Remix, and click **Refresh agents**. Use `addAgent(name, wallet)` or `addAgentWithDetails(name, wallet, description, endpointUrl)`; the contract does not have `registerAgent` or store prices. Ask Chat agent to list available agents to read the saved directory. Paid delegation continues to use the backend's trusted seller configuration.
 
 ## Current scope
 
-This repository is a local prototype with demo authentication and testnet payments. It does not yet provide production user accounts, per-user signing wallets, a distributed payment ledger, automatic agent deployment, or an app integration with the on-chain directory.
+This repository is a local prototype with demo authentication and testnet payments. It does not yet provide production user accounts, per-user signing wallets, a distributed payment ledger, automatic agent deployment, or automatic paid delegation to on-chain entries.
 
 Payment tests use mocked facilitator responses and do not establish real on-chain settlement. Contract deployment and a live paid request require separate verification in the selected environment.
 

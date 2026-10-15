@@ -14,6 +14,7 @@
     "info": "eve info",
     "typecheck": "tsc --noEmit",
     "test:payments": "bun test payments/*.test.ts",
+    "test:registry": "bun test registry/*.test.ts",
     "dev:helper": "node scripts/run-everyday-helper.mjs dev --host 127.0.0.1 --port 2001",
     "build:helper": "node scripts/run-everyday-helper.mjs build",
     "start:helper": "node scripts/run-everyday-helper.mjs start --host 127.0.0.1 --port 2001",
