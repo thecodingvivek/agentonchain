@@ -26,7 +26,7 @@ test("browser-wallet transaction encodes the deployed ABI and sends zero ETH to 
       methods.push(method);
       if (method === "eth_chainId") return chain;
       if (method === "wallet_switchEthereumChain") { chain = "0x14a34"; return null; }
-      if (method === "eth_requestAccounts") return [owner];
+      if (method === "eth_requestAccounts" || method === "eth_accounts") return [owner];
       if (method === "eth_getCode") return "0x6000";
       if (method === "eth_sendTransaction") {
         const tx = (params as { from: string; to: string; value: string; data: string; chainId: string }[])[0];
@@ -47,6 +47,8 @@ test("browser-wallet transaction encodes the deployed ABI and sends zero ETH to 
     assert.equal(await submitRegistration(wallet, target, data), hash);
     assert.equal(methods.filter((method) => method === "eth_sendTransaction").length, 1);
     assert.ok(methods.includes("wallet_switchEthereumChain"));
+    assert.ok(methods.indexOf("eth_requestAccounts") < methods.indexOf("wallet_switchEthereumChain"), "connect before requesting a network switch");
+    assert.ok(methods.indexOf("wallet_switchEthereumChain") < methods.indexOf("eth_accounts"), "re-read the sender after switching");
   }
 });
 
@@ -55,7 +57,7 @@ test("wrong chain and rejected wallet connection never send a registration trans
   const wallet: Eip1193Provider = { async request({ method }) {
     if (method === "eth_chainId") return "0x1";
     if (method === "wallet_switchEthereumChain") return null;
-    if (method === "eth_requestAccounts") return [owner];
+    if (method === "eth_requestAccounts" || method === "eth_accounts") return [owner];
     sent = true;
     throw new Error("Transaction must not be sent");
   } };

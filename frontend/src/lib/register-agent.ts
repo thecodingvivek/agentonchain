@@ -32,12 +32,16 @@ export async function submitRegistration(ethereum: Eip1193Provider, contractAddr
   const agent = validateRegistration(input);
   const target = getAddress(contractAddress);
   if (target === ZeroAddress) throw new Error("The registry contract address is invalid.");
+  // Establish the site's account permission before prompting for a network change.
+  const accounts: unknown = await ethereum.request({ method: "eth_requestAccounts" });
+  if (!Array.isArray(accounts) || typeof accounts[0] !== "string") throw new Error("Connect an account in your browser wallet.");
   if (await ethereum.request({ method: "eth_chainId" }) !== "0x14a34") {
     await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x14a34" }] });
   }
-  const accounts: unknown = await ethereum.request({ method: "eth_requestAccounts" });
-  if (!Array.isArray(accounts) || typeof accounts[0] !== "string") throw new Error("Connect an account in your browser wallet.");
-  const from = getAddress(accounts[0]);
+  // Re-read after a possible switch so an account change cannot leave a stale sender.
+  const connected: unknown = await ethereum.request({ method: "eth_accounts" });
+  if (!Array.isArray(connected) || typeof connected[0] !== "string") throw new Error("Reconnect your wallet account before registering.");
+  const from = getAddress(connected[0]);
   if (await ethereum.request({ method: "eth_chainId" }) !== "0x14a34") throw new Error("Select Base Sepolia in your wallet before registering.");
   if (await ethereum.request({ method: "eth_getCode", params: [target, "latest"] }) === "0x") throw new Error("No registry contract was found on Base Sepolia.");
   const data = agent.description || agent.endpointUrl
