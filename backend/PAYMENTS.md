@@ -110,6 +110,7 @@ This project uses eve custom HTTP channels, the standard MCP SDK, and official `
 - An agent execution error does not settle payment. A settlement failure does not release a successful paid answer.
 - The ledger in the Chat agent's ignored `.eve/paid-calls/` directory allows one paid attempt per turn. An identical completed call replay returns its cached answer and receipt; failed or uncertain attempts are not automatically paid again. Keep this directory across restarts.
 - If the connection fails after signing, payment may already have been submitted. Check the wallet before explicitly retrying. Chat reports success only when it receives a confirmed receipt.
+- Seller error text, such as the facilitator's settlement failure reason, is returned to Chat agent and saved in the failed-attempt ledger. Signed payment payloads and private keys are not included in these diagnostics. Older failed records may contain only a failed state because they predate this logging.
 - This is a local demo with one configured backend buyer wallet. Distributed deployment needs shared durable payment state and real user authentication.
 
 ## Implementation map
@@ -127,3 +128,9 @@ This project uses eve custom HTTP channels, the standard MCP SDK, and official `
 | `../frontend/src/components/cards.tsx` | Public wallet Card and signer status. |
 
 Payment tests use a synthetic key and mocked facilitator, including real signature verification. They do not establish live settlement. After startup, check `/eve/v1/health` on each agent's port to confirm server availability; this does not check wallet funding or establish a completed payment.
+
+## Verified local paid request
+
+On October 16, 2026 (Asia/Kolkata), a request through the frontend `/api/chat` proxy successfully asked Chat agent to use Everyday helper. The seller returned “I’m Everyday Helper. How can I assist you today?” and the buyer recorded a completed 0.01 test USDC payment. RPC verification confirmed receipt status 1 and a USDC transfer of 10000 atomic units in block 48162396: [transaction receipt](https://sepolia.basescan.org/tx/0xb8201928f3f02d4a5f0bfa4ed3ce04f94ba4a06b9a49ba50105c2b1de71f6c6a).
+
+To repeat from the UI, save the public backend signer address in **Cards** with a per-call cap of at least `0.01`, then ask: “Use Everyday helper to explain what an API is.” This is a new paid request. Registering the seller in Deploy does not configure the buyer card or start the seller process.

@@ -91,7 +91,7 @@ test("unknown agents, absent cards, signer mismatch, and low card limits fail be
 test("failed or uncertain settlement is blocked from automatic retries", async () => {
   const f = await fixture({ failedSettlement: true });
   try {
-    await assert.rejects(invokePaidAgent(input, f.dependencies), /Payment may have been submitted/);
+    await assert.rejects(invokePaidAgent(input, f.dependencies), /Payment settlement failed: test_failure.*Payment may have been submitted/);
     await assert.rejects(invokePaidAgent(input, f.dependencies), /prior attempt exists/);
     assert.deepEqual(f.counts, { verifies: 1, executes: 1, settles: 1 });
   } finally { await f.close(); }
